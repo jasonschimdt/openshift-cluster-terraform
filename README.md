@@ -39,31 +39,38 @@ Leave about five minutes for everything to start up fully.
 
 Copy the ssh key and ansible-hosts file to the bastion host from where you need to run the Ansible OpenShift playbooks.
 ```
-ssh-add ./helper_scripts/id_rsa_bastion
-ssh-keyscan -t rsa -H $(terraform output bastion-public_ip) >> ~/.ssh/known_hosts
-ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H master.openshift.local >> ~/.ssh/known_hosts"
-ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H node1.openshift.local >> ~/.ssh/known_hosts"
-ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H node2.openshift.local >> ~/.ssh/known_hosts"
-scp ./helper_scripts/id_rsa ec2-user@$(terraform output bastion-public_ip):~/.ssh/
-scp ./inventory.cfg ec2-user@$(terraform output bastion-public_ip):~
+ssh-add ./helper_scripts/id_rsa_bastion &&
+ssh-keyscan -t rsa -H $(terraform output bastion-public_ip) >> ~/.ssh/known_hosts && \
+ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output master-private_route53_dns)>> ~/.ssh/known_hosts" && \
+ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output master-private_dns) >> ~/.ssh/known_hosts" && \
+ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output master-private_ip) >> ~/.ssh/known_hosts" && \
+ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output node1-private_route53_dns)>> ~/.ssh/known_hosts" && \
+ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output node1-private_dns) >> ~/.ssh/known_hosts" && \
+ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output node1-private_ip) >> ~/.ssh/known_hosts" && \
+ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output node2-private_route53_dns)>> ~/.ssh/known_hosts" && \
+ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output node2-private_dns) >> ~/.ssh/known_hosts" && \
+ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output node2-private_ip) >> ~/.ssh/known_hosts" && \
+scp ./helper_scripts/id_rsa ec2-user@$(terraform output bastion-public_ip):~/.ssh/ && \
+scp ./inventory.cfg ec2-user@$(terraform output bastion-public_ip):~ && \
+echo DONE!
 ```
 
-Then, copy our inventory to the master and run the install script.
+To make sure the provisoning script are really finished, check the provisoning logs:
 ```
-cat ./helper_scripts/install-from-bastion.sh | ssh -o StrictHostKeyChecking=no -A ec2-user@$(terraform output bastion-public_ip)
+ssh -A ec2-user@$(terraform output bastion-public_ip) "tail -f /var/log/user-data.log"
+```
+
+Then, run the install script.
+```
+cat ./helper_scripts/install-from-bastion.sh | ssh -A ec2-user@$(terraform output bastion-public_ip)
 ```
 
 Finally, run post install scripts
 ```
-cat ./helper_scripts/postinstall-master.sh | ssh -A ec2-user@$$(terraform output bastion-public_ip) ssh master.openshift.local
-cat ./helper_scripts/postinstall-node.sh | ssh -A ec2-user@$$(terraform output bastion-public_ip) ssh node1.openshift.local
-cat ./helper_scripts/postinstall-node.sh | ssh -A ec2-user@$$(terraform output bastion-public_ip) ssh node2.openshift.local
+cat ./helper_scripts/postinstall-master.sh | ssh -A ec2-user@$(terraform output bastion-public_ip) ssh master.openshift.local
+cat ./helper_scripts/postinstall-node.sh | ssh -A ec2-user@$(terraform output bastion-public_ip) ssh node1.openshift.local
+cat ./helper_scripts/postinstall-node.sh | ssh -A ec2-user@$(terraform output bastion-public_ip) ssh node2.openshift.local
 ```
 
+oc login -u admin -p admin123! https://console-aws-paas.clouddemo.saggov.com:8443
 
-
-
-```
-scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ./helper_scripts/id_rsa_bastion -r ./helper_scripts/id_rsa ec2-user@$(terraform output bastion-public_ip):~/.ssh/id_rsa
-scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.ssh/openshift_id_rsa -r ./inventory.cfg ec2-user@$(terraform output bastion-public_ip):~/
-```
