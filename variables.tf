@@ -8,9 +8,19 @@ variable "cluster_name" {
   default = "openshift-cluster"
 }
 
+variable "openshift_default_subdomain" {
+  description = "Default subdomain for openshuft cluster"
+  default = "awspaas.clouddemo.saggov.com"
+}
+
+variable "openshift_public_hostname" {
+  description = "Public DNS for the web console"
+  default = "console.awspaas.clouddemo.saggov.com"
+}
+
 variable "openshift_bastion_key_name" {
   description = "My ssh key name"
-  default = "SAGGOV_OPENSHIFT_BASTION"
+  default = "OPENSHIFT_BASTION"
 }
 
 variable "openshift_bastion_key_path" {
@@ -20,7 +30,7 @@ variable "openshift_bastion_key_path" {
 
 variable "openshift_nodes_key_name" {
   description = "My public ssh key name"
-   default = "SAGGOV_OPENSHIFT_NODES"
+   default = "OPENSHIFT_NODES"
 }
 
 variable "openshift_nodes_key_path" {

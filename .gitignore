@@ -4,3 +4,4 @@ terraform.tfstate.backup
 id_rsa*
 inventory.cfg
 .DS_Store
+.swp
