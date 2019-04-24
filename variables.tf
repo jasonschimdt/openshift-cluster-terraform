@@ -10,12 +10,12 @@ variable "cluster_name" {
 
 variable "openshift_default_subdomain" {
   description = "Default subdomain for openshuft cluster"
-  default = "awspaas.clouddemo.saggov.com"
+  default = "awspaas.demos.saggov.com"
 }
 
 variable "openshift_public_hostname" {
   description = "Public DNS for the web console"
-  default = "console.awspaas.clouddemo.saggov.com"
+  default = "console.awspaas.demos.saggov.com"
 }
 
 variable "openshift_bastion_key_name" {
